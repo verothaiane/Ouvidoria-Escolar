@@ -135,32 +135,51 @@ document.getElementById('track-form').addEventListener('submit', async (e)=>{
   const code = document.getElementById('tcode').value.trim().toUpperCase();
   const pass = document.getElementById('tpass').value.trim();
 
-  const report = await getReport(code);
-  if(!report || report.password !== pass){
-    msg.textContent = 'Código ou senha inválidos. Verifique os dados recebidos no envio do relato.';
+  try {
+    // Consulta a nossa API no Node.js
+    const response = await fetch('http://localhost:3000/api/acompanhar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ protocolo: code, senha: pass })
+    });
+
+    if (!response.ok) {
+      msg.textContent = 'Código ou senha inválidos. Verifique os dados recebidos no envio do relato.';
+      msg.classList.add('show','error');
+      return;
+    }
+
+    // Recebe os dados do banco de dados formatados
+    const report = await response.json();
+
+    // Preenche os dados na tela
+    document.getElementById('tr-title').textContent = report.titulo;
+    document.getElementById('tr-badge').textContent = report.status;
+    document.getElementById('tr-badge').className = 'badge '+badgeClass(report.status);
+    document.getElementById('tr-meta').textContent = report.categoria + ' · Enviado em ' + fmtDate(report.createdAt);
+
+    // Constrói a linha do tempo do histórico
+    const tl = document.getElementById('tr-timeline');
+    tl.innerHTML='';
+    report.history.slice().reverse().forEach(h=>{
+      const item = document.createElement('div');
+      item.className='tl-item';
+      item.innerHTML = `<div class="tl-dot"></div><div class="tl-body">
+        <div class="tl-title">${h.status}</div>
+        <div class="tl-date">${fmtDate(h.date)}</div>
+        <div class="tl-note">${h.note||''}</div>
+      </div>`;
+      tl.appendChild(item);
+    });
+
+    // Mostra o resultado na tela
+    document.getElementById('track-result').style.display='block';
+
+  } catch(erro) {
+    msg.textContent = 'Erro de conexão com o servidor.';
     msg.classList.add('show','error');
-    return;
+    console.error(erro);
   }
-
-  document.getElementById('tr-title').textContent = report.titulo;
-  document.getElementById('tr-badge').textContent = report.status;
-  document.getElementById('tr-badge').className = 'badge '+badgeClass(report.status);
-  document.getElementById('tr-meta').textContent = report.categoria + ' · Enviado em ' + fmtDate(report.createdAt);
-
-  const tl = document.getElementById('tr-timeline');
-  tl.innerHTML='';
-  report.history.slice().reverse().forEach(h=>{
-    const item = document.createElement('div');
-    item.className='tl-item';
-    item.innerHTML = `<div class="tl-dot"></div><div class="tl-body">
-      <div class="tl-title">${h.status}</div>
-      <div class="tl-date">${fmtDate(h.date)}</div>
-      <div class="tl-note">${h.note||''}</div>
-    </div>`;
-    tl.appendChild(item);
-  });
-
-  document.getElementById('track-result').style.display='block';
 });
 
 /* ===================== Equipe: login / cadastro ===================== */
