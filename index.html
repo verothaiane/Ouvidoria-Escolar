@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ouvidoria Escolar — Canal Seguro e Sigiloso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Link para o arquivo CSS externo -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="brand" onclick="goTo('home')" aria-label="Página inicial">
+    <span class="brand-icon">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5.2 3.4 9.9 8 11 4.6-1.1 8-5.8 8-11V5l-8-3z" stroke="#f7f3ea" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4.5" stroke="#f7f3ea" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <span class="brand-text">
+      <span class="name">Ouvidoria Escolar</span>
+      <span class="tag">Canal seguro e sigiloso</span>
+    </span>
+  </button>
+  <nav class="mainnav">
+    <button data-page="relato" onclick="goTo('relato')">Enviar relato</button>
+    <button data-page="acompanhar" onclick="goTo('acompanhar')">Acompanhar</button>
+    <button data-page="equipe" onclick="goTo('equipe')">Equipe</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= HOME ================= -->
+  <section id="page-home" class="page active">
+    <div class="hero">
+      <div>
+        <span class="eyebrow">🛡 Escuta protegida</span>
+        <h1>Sua voz importa — e pode ser totalmente anônima.</h1>
+        <p class="lead">Um canal oficial para alunos, famílias e funcionários relatarem bullying, assédio, problemas de infraestrutura, sugestões e elogios. Sem burocracia, sem cadastro obrigatório, com sigilo garantido.</p>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="goTo('relato')">Fazer um relato</button>
+          <button class="btn btn-outline" onclick="goTo('acompanhar')">Acompanhar protocolo</button>
+        </div>
+        <p class="fineprint">Nenhum IP é registrado em envios anônimos. Conformidade com a LGPD (Lei 13.709/2018).</p>
+      </div>
+      <div class="panel">
+        <h3>O que você pode relatar</h3>
+        <ul>
+          <li>Bullying / Violência entre alunos</li>
+          <li>Assédio ou abuso</li>
+          <li>Infraestrutura da escola</li>
+          <li>Reclamação</li>
+          <li>Sugestão</li>
+          <li>Elogio</li>
+          <li>Outros</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ENVIAR RELATO ================= -->
+  <section id="page-relato" class="page">
+    <div class="section narrow">
+      <div class="section-head">
+        <h2>Enviar relato</h2>
+        <p>Preencha com o máximo de detalhes possível. Quanto mais claro o relato, mais rápido a escola consegue agir.</p>
+      </div>
+
+      <div id="relato-msg" class="status-msg"></div>
+
+      <form class="card" id="relato-form">
+        <div class="field">
+          <label for="categoria">Categoria</label>
+          <select id="categoria" required>
+            <option value="" disabled selected>Selecione a categoria do relato</option>
+            <option>Bullying / Violência entre alunos</option>
+            <option>Assédio ou abuso</option>
+            <option>Infraestrutura da escola</option>
+            <option>Reclamação</option>
+            <option>Sugestão</option>
+            <option>Elogio</option>
+            <option>Outros</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="titulo">Título</label>
+          <input type="text" id="titulo" placeholder="Resuma em uma frase" required maxlength="120">
+        </div>
+
+        <div class="field">
+          <label for="descricao">Descrição detalhada</label>
+          <textarea id="descricao" placeholder="O que aconteceu? Quando e onde? Há outras pessoas envolvidas ou testemunhas?" required></textarea>
+        </div>
+
+        <div class="field">
+          <label>Evidências (opcional)</label>
+          <label class="file-drop" for="evidencias">
+            📎 Fotos, vídeos ou áudios — até 5 arquivos de 25 MB cada
+            <input type="file" id="evidencias" multiple>
+          </label>
+          <div class="file-list" id="file-list"></div>
+          <div class="hint">Os arquivos ficam apenas listados nesta demonstração; um backend real seria necessário para armazená-los com segurança.</div>
+        </div>
+
+        <div class="toggle-card">
+          <input type="checkbox" id="anonimo" checked onchange="toggleContact()">
+          <div>
+            <div class="t-title">Deseja que este relato seja 100% anônimo?</div>
+            <div class="t-desc" id="anon-desc">Marcado: nenhum dado pessoal é pedido e nenhum IP é registrado. Você acompanha o caso apenas pelo código e senha gerados no final.</div>
+          </div>
+        </div>
+
+        <div class="contact-fields" id="contact-fields">
+          <div class="field half">
+            <label for="nome">Nome</label>
+            <input type="text" id="nome" placeholder="Seu nome">
+          </div>
+          <div class="field half">
+            <label for="vinculo">Vínculo com a escola</label>
+            <input type="text" id="vinculo" placeholder="Aluno, familiar, funcionário...">
+          </div>
+          <div class="field">
+            <label for="email">E-mail ou telefone para contato</label>
+            <input type="text" id="email" placeholder="Como podemos te responder?">
+          </div>
+        </div>
+
+        <label class="checkline">
+          <input type="checkbox" id="termos" required>
+          <span>Declaro que as informações são verdadeiras e li a <a href="#" onclick="return false">política de privacidade e os termos de uso</a>.</span>
+        </label>
+
+        <button type="submit" class="btn btn-dark">Enviar relato</button>
+      </form>
+
+      <div class="protocol-box" id="protocol-box">
+        <div style="font-size:0.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-soft);">Relato enviado</div>
+        <div class="code" id="protocol-code">OE-000000</div>
+        <div>Senha de acompanhamento: <span class="pass" id="protocol-pass">------</span></div>
+        <p>Guarde este código e senha — são a única forma de acompanhar o andamento do seu relato. Eles não podem ser recuperados depois.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ACOMPANHAR ================= -->
+  <section id="page-acompanhar" class="page">
+    <div class="section narrow">
+      <div class="section-head">
+        <h2>Acompanhar protocolo</h2>
+        <p>Informe o código e a senha gerados no momento do envio para ver o status atual do seu relato.</p>
+      </div>
+
+      <div class="card">
+        <form class="track-form" id="track-form">
+          <div class="field">
+            <label for="tcode">Código do protocolo</label>
+            <input type="text" id="tcode" placeholder="OE-000000" required>
+          </div>
+          <div class="field">
+            <label for="tpass">Senha</label>
+            <input type="text" id="tpass" placeholder="Senha de acompanhamento" required>
+          </div>
+          <button class="btn btn-dark" type="submit" style="height:46px;">Consultar</button>
+        </form>
+        <div id="track-msg" class="status-msg" style="margin-top:20px;"></div>
+        <div id="track-result" style="display:none;margin-top:26px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+            <h3 id="tr-title" style="margin:0;font-size:1.2rem;"></h3>
+            <span class="badge" id="tr-badge"></span>
+          </div>
+          <p style="color:var(--ink-soft);font-size:0.85rem;margin:6px 0 0;" id="tr-meta"></p>
+          <div class="timeline" id="tr-timeline"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPE ================= -->
+  <section id="page-equipe" class="page">
+
+    <div id="equipe-login" class="section narrow">
+      <div class="auth-wrap">
+        <div>
+          <span class="eyebrow" style="color:var(--gold);background:var(--cream-2);border-color:var(--line);">🛡</span>
+          <h2 style="margin-top:14px;">Acesso da equipe</h2>
+          <p style="color:var(--ink-soft);margin-bottom:26px;max-width:400px;">Área restrita à ouvidoria: direção, orientação e psicologia escolar.</p>
+
+          <div class="auth-card card">
+            <div class="tabbar">
+              <button id="tab-entrar" class="active" onclick="switchAuthTab('entrar')">Entrar</button>
+              <button id="tab-criar" onclick="switchAuthTab('criar')">Criar conta</button>
+            </div>
+
+            <div id="login-msg" class="status-msg"></div>
+
+            <form id="login-form">
+              <div class="field">
+                <label for="login-email">E-mail institucional</label>
+                <input type="email" id="login-email" required placeholder="nome@escola.edu.br">
+              </div>
+              <div class="field">
+                <label for="login-senha">Senha</label>
+                <input type="password" id="login-senha" required>
+              </div>
+              <button type="submit" class="btn btn-dark" style="width:100%;">Entrar</button>
+            </form>
+
+            <form id="signup-form" style="display:none;">
+              <div class="field">
+                <label for="signup-nome">Nome completo</label>
+                <input type="text" id="signup-nome" required>
+              </div>
+              <div class="field">
+                <label for="signup-email">E-mail institucional</label>
+                <input type="email" id="signup-email" required placeholder="nome@escola.edu.br">
+              </div>
+              <div class="field">
+                <label for="signup-senha">Senha</label>
+                <input type="password" id="signup-senha" required minlength="6">
+              </div>
+              <button type="submit" class="btn btn-dark" style="width:100%;">Criar conta</button>
+            </form>
+          </div>
+          <p class="hint" style="margin-top:14px;max-width:420px;">Ambiente de demonstração: o login roda inteiramente no navegador, sem servidor. Para uso real, é indispensável um backend com autenticação e criptografia adequadas.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="equipe-dash" class="section" style="display:none;">
+      <div class="dash-header">
+        <div>
+          <h2 style="margin:0;">Painel da ouvidoria</h2>
+          <div class="who" id="dash-who"></div>
+        </div>
+        <button class="btn btn-outline" style="color:var(--teal-950);border-color:var(--line);" onclick="staffLogout()">Sair</button>
+      </div>
+
+      <div class="filters" id="dash-filters">
+        <button class="active" data-f="todos" onclick="setFilter('todos')">Todos</button>
+        <button data-f="Recebido" onclick="setFilter('Recebido')">Recebido</button>
+        <button data-f="Em análise" onclick="setFilter('Em análise')">Em análise</button>
+        <button data-f="Concluído" onclick="setFilter('Concluído')">Concluído</button>
+      </div>
+
+      <div id="dash-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="fbrand">
+        <span class="brand-icon" style="width:30px;height:30px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2L4 5v6c0 5.2 3.4 9.9 8 11 4.6-1.1 8-5.8 8-11V5l-8-3z" stroke="#f7f3ea" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </span>
+        <h4 style="margin:0;">Ouvidoria Escolar</h4>
+      </div>
+      <p>Canal institucional de escuta para alunos, famílias e funcionários. Sigilo garantido em cada etapa.</p>
+    </div>
+    <div>
+      <h4>Navegação</h4>
+      <ul>
+        <li><a href="#" onclick="goTo('relato');return false;">Enviar relato</a></li>
+        <li><a href="#" onclick="goTo('acompanhar');return false;">Acompanhar</a></li>
+        <li><a href="#" onclick="goTo('equipe');return false;">Equipe</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Emergências</h4>
+      <p>Em situações de risco imediato, procure a direção da escola ou ligue 190 / 192. Este canal não substitui atendimento de emergência.</p>
+    </div>
+  </div>
+  <div class="foot-bottom">© 2026 Ouvidoria Escolar. Protótipo de demonstração — não armazena dados em servidor externo.</div>
+</footer>
+
+<!-- Modal de relato (equipe) -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<!-- Link para o arquivo JavaScript externo -->
+<script src="script.js"></script>
+
+</body>
+</html>
