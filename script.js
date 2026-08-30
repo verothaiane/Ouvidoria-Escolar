@@ -182,174 +182,172 @@ document.getElementById('track-form').addEventListener('submit', async (e)=>{
   }
 });
 
-/* ===================== Equipe: login / cadastro ===================== */
-function switchAuthTab(tab){
-  document.getElementById('tab-entrar').classList.toggle('active', tab==='entrar');
-  document.getElementById('tab-criar').classList.toggle('active', tab==='criar');
-  document.getElementById('login-form').style.display = tab==='entrar' ? 'block' : 'none';
-  document.getElementById('signup-form').style.display = tab==='criar' ? 'block' : 'none';
-  document.getElementById('login-msg').classList.remove('show');
-}
-
-async function getStaff(){
-  try{
-    const r = await window.storage.get('staff-accounts', true);
-    return r ? JSON.parse(r.value) : [];
-  }catch(e){ return []; }
-}
-async function saveStaff(list){
-  try{ await window.storage.set('staff-accounts', JSON.stringify(list), true); }catch(e){}
-}
-
-document.getElementById('signup-form').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const nome = document.getElementById('signup-nome').value.trim();
-  const email = document.getElementById('signup-email').value.trim().toLowerCase();
-  const senha = document.getElementById('signup-senha').value;
-  const msg = document.getElementById('login-msg');
-
-  const staff = await getStaff();
-  if(staff.find(s=>s.email===email)){
-    msg.textContent = 'Já existe uma conta com este e-mail.';
-    msg.className='status-msg show error';
-    return;
-  }
-  staff.push({nome, email, senha});
-  await saveStaff(staff);
-  msg.textContent = 'Conta criada. Você já pode entrar.';
-  msg.className='status-msg show success';
-  switchAuthTab('entrar');
-});
+/* ===================== Equipe: Login ===================== */
+let sessionUser = null;
 
 document.getElementById('login-form').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const email = document.getElementById('login-email').value.trim();
   const senha = document.getElementById('login-senha').value;
   const msg = document.getElementById('login-msg');
 
-  const staff = await getStaff();
-  const found = staff.find(s=>s.email===email && s.senha===senha);
-  if(!found){
-    msg.textContent = 'E-mail ou senha incorretos.';
-    msg.className='status-msg show error';
-    return;
+  msg.className = 'status-msg';
+  msg.textContent = '';
+
+  try {
+    const response = await fetch('http://localhost:3000/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha })
+    });
+
+    if (!response.ok) {
+      msg.textContent = 'E-mail ou senha incorretos.';
+      msg.classList.add('show','error');
+      return;
+    }
+
+    const data = await response.json();
+    sessionUser = data.usuario; // Guarda os dados da diretoria na sessão
+
+    // Muda a tela para o painel de administração
+    document.getElementById('equipe-login').style.display = 'none';
+    document.getElementById('equipe-dash').style.display = 'block';
+    document.getElementById('dash-who').textContent = sessionUser.nome + ' · ' + sessionUser.email;
+    
+    // Chama a função que vai carregar os relatos (faremos ela a seguir)
+    loadDashboard();
+
+  } catch (erro) {
+    msg.textContent = 'Erro de conexão com o servidor. Verifique se o Node.js está rodando.';
+    msg.classList.add('show','error');
+    console.error(erro);
   }
-  sessionUser = found;
-  document.getElementById('equipe-login').style.display='none';
-  document.getElementById('equipe-dash').style.display='block';
-  document.getElementById('dash-who').textContent = found.nome + ' · ' + found.email;
-  loadDashboard();
 });
 
-let sessionUser = null;
 function staffLogout(){
   sessionUser = null;
-  document.getElementById('equipe-login').style.display='block';
-  document.getElementById('equipe-dash').style.display='none';
+  document.getElementById('equipe-login').style.display = 'block';
+  document.getElementById('equipe-dash').style.display = 'none';
   document.getElementById('login-form').reset();
 }
+
 function renderEquipeView(){
   if(sessionUser){
-    document.getElementById('equipe-login').style.display='none';
-    document.getElementById('equipe-dash').style.display='block';
+    document.getElementById('equipe-login').style.display = 'none';
+    document.getElementById('equipe-dash').style.display = 'block';
     loadDashboard();
   }
 }
 
 /* ===================== Painel da equipe ===================== */
-let currentFilter='todos';
-let cachedReports=[];
+let currentFilter = 'todos';
+let cachedReports = [];
 
 function setFilter(f){
-  currentFilter=f;
-  document.querySelectorAll('#dash-filters button').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  currentFilter = f;
+  document.querySelectorAll('#dash-filters button').forEach(b => b.classList.toggle('active', b.dataset.f === f));
   renderList();
 }
 
 async function loadDashboard(){
-  const idx = await getIndex();
-  const reports = [];
-  for(const code of idx){
-    const r = await getReport(code);
-    if(r) reports.push(r);
+  try {
+    const response = await fetch('http://localhost:3000/api/relatos');
+    cachedReports = await response.json();
+    renderList();
+  } catch(e) {
+    console.error('Erro ao buscar relatos:', e);
   }
-  cachedReports = reports;
-  renderList();
 }
 
 function renderList(){
   const list = document.getElementById('dash-list');
-  const items = currentFilter==='todos' ? cachedReports : cachedReports.filter(r=>r.status===currentFilter);
-  if(items.length===0){
+  const items = currentFilter === 'todos' ? cachedReports : cachedReports.filter(r => r.status === currentFilter);
+  
+  if(items.length === 0){
     list.innerHTML = '<div class="empty-state">Nenhum relato encontrado nesta categoria.</div>';
     return;
   }
-  list.innerHTML='';
-  items.forEach(r=>{
+  list.innerHTML = '';
+  
+  items.forEach(r => {
     const row = document.createElement('div');
-    row.className='report-row';
-    row.onclick=()=>openModal(r.protocol);
+    row.className = 'report-row';
+    row.onclick = () => openModal(r.protocolo);
     row.innerHTML = `
       <div class="r-top">
         <span class="r-title">${r.titulo}</span>
         <span class="badge ${badgeClass(r.status)}">${r.status}</span>
       </div>
-      <div class="r-meta">${r.protocol} · ${r.categoria} · ${r.anonimo?'Anônimo':(r.contato&&r.contato.nome)||'Identificado'} · ${fmtDate(r.createdAt)}</div>
+      <div class="r-meta">${r.protocolo} · ${r.categoria} · ${r.anonimo ? 'Anônimo' : (r.contato_nome || 'Identificado')} · ${fmtDate(r.createdAt)}</div>
     `;
     list.appendChild(row);
   });
 }
 
-async function openModal(protocol){
-  const r = await getReport(protocol);
-  if(!r) return;
-  const overlay = document.getElementById('modal-overlay');
-  const body = document.getElementById('modal-body');
-
-  const statuses = ['Recebido','Em análise','Concluído'];
-  body.innerHTML = `
-    <button class="close-x" onclick="closeModal()">✕</button>
-    <div class="hint" style="margin-bottom:4px;">${r.protocol} · ${r.categoria}</div>
-    <h3>${r.titulo}</h3>
-    <div class="r-meta">${r.anonimo?'Relato anônimo':'Relato identificado'} · Enviado em ${fmtDate(r.createdAt)}</div>
-    ${!r.anonimo && r.contato ? `<div class="desc-block" style="margin-top:10px;"><strong>Contato:</strong> ${r.contato.nome||'-'} · ${r.contato.vinculo||'-'} · ${r.contato.contato||'-'}</div>` : ''}
-    <div class="desc-block">${r.descricao}</div>
-    ${r.files && r.files.length ? `<div class="hint">Evidências anexadas: ${r.files.join(', ')}</div>` : ''}
-    <h4 style="margin-bottom:8px;">Atualizar status</h4>
-    <div class="status-actions" id="status-actions">
-      ${statuses.map(s=>`<button class="${s===r.status?'current':''}" onclick="updateStatus('${r.protocol}','${s}')">${s}</button>`).join('')}
-    </div>
-    <div class="field">
-      <label for="note-input">Adicionar observação interna</label>
-      <textarea id="note-input" placeholder="Ex: aluno chamado à orientação, responsáveis notificados..." style="min-height:80px;"></textarea>
-      <button class="btn btn-dark" style="margin-top:10px;" onclick="addNote('${r.protocol}')">Salvar observação</button>
-    </div>
-    <h4>Histórico</h4>
-    <div class="note-log">
-      ${r.history.slice().reverse().map(h=>`<div class="note-item"><div class="n-date">${fmtDate(h.date)} · ${h.status}</div>${h.note||''}</div>`).join('')}
-    </div>
-  `;
-  overlay.classList.add('show');
+async function openModal(protocolo){
+  try {
+    const response = await fetch(`http://localhost:3000/api/relatos/${protocolo}`);
+    if(!response.ok) return;
+    
+    const r = await response.json();
+    const overlay = document.getElementById('modal-overlay');
+    const body = document.getElementById('modal-body');
+    const statuses = ['Recebido','Em análise','Concluído'];
+    
+    body.innerHTML = `
+      <button class="close-x" onclick="closeModal()">✕</button>
+      <div class="hint" style="margin-bottom:4px;">${r.protocolo} · ${r.categoria}</div>
+      <h3>${r.titulo}</h3>
+      <div class="r-meta">${r.anonimo ? 'Relato anônimo' : 'Relato identificado'} · Enviado em ${fmtDate(r.data_criacao)}</div>
+      ${!r.anonimo && r.contato_nome ? `<div class="desc-block" style="margin-top:10px;"><strong>Contato:</strong> ${r.contato_nome||'-'} · ${r.contato_vinculo||'-'} · ${r.contato_dado||'-'}</div>` : ''}
+      <div class="desc-block">${r.descricao}</div>
+      
+      <h4 style="margin-bottom:8px;">Atualizar status</h4>
+      <div class="status-actions" id="status-actions">
+        ${statuses.map(s=>`<button class="${s===r.status?'current':''}" onclick="updateStatus('${r.protocolo}','${s}')">${s}</button>`).join('')}
+      </div>
+      <div class="field">
+        <label for="note-input">Adicionar observação interna</label>
+        <textarea id="note-input" placeholder="Ex: aluno chamado à orientação, responsáveis notificados..." style="min-height:80px;"></textarea>
+        <button class="btn btn-dark" style="margin-top:10px;" onclick="addNote('${r.protocolo}')">Salvar observação</button>
+      </div>
+      <h4>Histórico</h4>
+      <div class="note-log">
+        ${r.history.slice().reverse().map(h=>`<div class="note-item"><div class="n-date">${fmtDate(h.date)} · ${h.status}</div>${h.note||''}</div>`).join('')}
+      </div>
+    `;
+    overlay.classList.add('show');
+  } catch(e) { console.error(e); }
 }
+
 function closeModal(){
   document.getElementById('modal-overlay').classList.remove('show');
 }
-async function updateStatus(protocol, status){
-  const r = await getReport(protocol);
-  if(!r) return;
-  r.status = status;
-  r.history.push({status, date:new Date().toISOString(), note:'Status atualizado pela equipe.'});
-  await saveReport(r);
-  await loadDashboard();
-  openModal(protocol);
+
+async function updateStatus(protocolo, status){
+  try {
+    await fetch(`http://localhost:3000/api/relatos/${protocolo}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    await loadDashboard(); // Recarrega a lista no fundo
+    openModal(protocolo);  // Atualiza o modal aberto
+  } catch(e) { console.error(e); }
 }
-async function addNote(protocol){
+
+async function addNote(protocolo){
   const note = document.getElementById('note-input').value.trim();
   if(!note) return;
-  const r = await getReport(protocol);
-  if(!r) return;
-  r.history.push({status:r.status, date:new Date().toISOString(), note});
-  await saveReport(r);
-  await loadDashboard();
-  openModal(protocol);
+  
+  try {
+    await fetch(`http://localhost:3000/api/relatos/${protocolo}/nota`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ note })
+    });
+    await loadDashboard();
+    openModal(protocolo);
+  } catch(e) { console.error(e); }
 }

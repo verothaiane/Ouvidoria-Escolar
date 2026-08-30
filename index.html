@@ -187,41 +187,20 @@
           <p style="color:var(--ink-soft);margin-bottom:26px;max-width:400px;">Área restrita à ouvidoria: direção, orientação e psicologia escolar.</p>
 
           <div class="auth-card card">
-            <div class="tabbar">
-              <button id="tab-entrar" class="active" onclick="switchAuthTab('entrar')">Entrar</button>
-              <button id="tab-criar" onclick="switchAuthTab('criar')">Criar conta</button>
-            </div>
+  <div id="login-msg" class="status-msg"></div>
 
-            <div id="login-msg" class="status-msg"></div>
-
-            <form id="login-form">
-              <div class="field">
-                <label for="login-email">E-mail institucional</label>
-                <input type="email" id="login-email" required placeholder="nome@escola.edu.br">
-              </div>
-              <div class="field">
-                <label for="login-senha">Senha</label>
-                <input type="password" id="login-senha" required>
-              </div>
-              <button type="submit" class="btn btn-dark" style="width:100%;">Entrar</button>
-            </form>
-
-            <form id="signup-form" style="display:none;">
-              <div class="field">
-                <label for="signup-nome">Nome completo</label>
-                <input type="text" id="signup-nome" required>
-              </div>
-              <div class="field">
-                <label for="signup-email">E-mail institucional</label>
-                <input type="email" id="signup-email" required placeholder="nome@escola.edu.br">
-              </div>
-              <div class="field">
-                <label for="signup-senha">Senha</label>
-                <input type="password" id="signup-senha" required minlength="6">
-              </div>
-              <button type="submit" class="btn btn-dark" style="width:100%;">Criar conta</button>
-            </form>
-          </div>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">E-mail da Diretoria</label>
+        <input type="email" id="login-email" required>
+      </div>
+      <div class="field">
+        <label for="login-senha">Senha de Acesso</label>
+        <input type="password" id="login-senha" required>
+      </div>
+      <button type="submit" class="btn btn-dark" style="width:100%;">Entrar no Painel</button>
+    </form>
+  </div>
           <p class="hint" style="margin-top:14px;max-width:420px;">Ambiente de demonstração: o login roda inteiramente no navegador, sem servidor. Para uso real, é indispensável um backend com autenticação e criptografia adequadas.</p>
         </div>
       </div>
