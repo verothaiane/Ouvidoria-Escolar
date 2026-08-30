@@ -77,42 +77,52 @@ document.getElementById('relato-form').addEventListener('submit', async (e)=>{
   const descricao = document.getElementById('descricao').value.trim();
   const anonimo = document.getElementById('anonimo').checked;
   const termos = document.getElementById('termos').checked;
-  const files = Array.from(document.getElementById('evidencias').files).slice(0,5).map(f=>f.name);
-
+  
   if(!termos){
     msg.textContent = 'É preciso confirmar que leu a política de privacidade e os termos de uso.';
     msg.classList.add('show','error');
     return;
   }
 
-  const contato = anonimo ? null : {
-    nome: document.getElementById('nome').value.trim(),
-    vinculo: document.getElementById('vinculo').value.trim(),
-    contato: document.getElementById('email').value.trim()
+  // Pegando os dados de contato (se não for anônimo)
+  const contato_nome = anonimo ? null : document.getElementById('nome').value.trim();
+  const contato_vinculo = anonimo ? null : document.getElementById('vinculo').value.trim();
+  const contato_dado = anonimo ? null : document.getElementById('email').value.trim();
+
+  const protocolo = genProtocol();
+  const senha = genPassword();
+
+  // Montando o pacote de dados para enviar ao Node.js
+  const dadosRelato = {
+    protocolo, senha, categoria, titulo, descricao, anonimo, 
+    contato_nome, contato_vinculo, contato_dado
   };
 
-  const protocol = genProtocol();
-  const password = genPassword();
+  try {
+    // Fazendo a requisição para a nossa API
+    const response = await fetch('http://localhost:3000/api/relatos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dadosRelato)
+    });
 
-  const report = {
-    protocol, password, categoria, titulo, descricao, anonimo, contato, files,
-    status: 'Recebido',
-    createdAt: new Date().toISOString(),
-    history: [{status:'Recebido', date:new Date().toISOString(), note:'Relato recebido pela ouvidoria.'}]
-  };
-
-  await saveReport(report);
-  const idx = await getIndex();
-  idx.unshift(protocol);
-  await saveIndex(idx);
-
-  document.getElementById('relato-form').style.display='none';
-  const box = document.getElementById('protocol-box');
-  document.getElementById('protocol-code').textContent = protocol;
-  document.getElementById('protocol-pass').textContent = password;
-  box.classList.add('show');
-  msg.textContent = 'Relato enviado com sucesso.';
-  msg.classList.add('show','success');
+    if(response.ok) {
+      document.getElementById('relato-form').style.display='none';
+      const box = document.getElementById('protocol-box');
+      document.getElementById('protocol-code').textContent = protocolo;
+      document.getElementById('protocol-pass').textContent = senha;
+      box.classList.add('show');
+      msg.textContent = 'Relato enviado com sucesso e salvo no banco de dados!';
+      msg.classList.add('show','success');
+    } else {
+      msg.textContent = 'Erro ao salvar o relato no servidor.';
+      msg.classList.add('show','error');
+    }
+  } catch(erro) {
+    msg.textContent = 'Erro de conexão com o servidor. Verifique se o Node.js está rodando.';
+    msg.classList.add('show','error');
+    console.error(erro);
+  }
 });
 
 /* ===================== Acompanhar ===================== */
