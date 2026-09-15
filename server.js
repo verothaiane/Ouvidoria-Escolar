@@ -6,12 +6,16 @@ const app = express();
 app.use(express.json()); 
 app.use(cors()); 
 
-// Configuração da conexão com o MySQL
+// Conexão com o Banco de Dados na Nuvem (Aiven)
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',      
-    password: 'Veronesetcvr1@',      // Coloque sua senha do MySQL aqui, se houver
-    database: 'ouvidoria_escolar'
+    host: 'ouvidoriaescolar-ouvidoria-escolar.b.aivencloud.com', 
+    port: 21735,
+    user: 'avnadmin',
+    password: 'AVNS_z9-pdgQQdweK9ptSh5b',
+    database: 'ouvidoria',
+    ssl: {
+        rejectUnauthorized: false 
+    }
 });
 
 db.connect((err) => {
@@ -185,7 +189,8 @@ app.post('/api/relatos/:protocolo/nota', (req, res) => {
     });
 });
 
-// Inicia o servidor
-app.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000: http://localhost:3000');
+// Define a porta que a nuvem mandar, ou usa a 3000 se estiver no computador
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
