@@ -100,7 +100,7 @@ document.getElementById('relato-form').addEventListener('submit', async (e)=>{
 
   try {
     // Fazendo a requisição para a nossa API
-    const response = await fetch('http://localhost:3000/api/relatos', {
+    const response = await fetch('https://ouvidoria-escolar.onrender.com/api/relatos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(dadosRelato)
@@ -137,7 +137,7 @@ document.getElementById('track-form').addEventListener('submit', async (e)=>{
 
   try {
     // Consulta a nossa API no Node.js
-    const response = await fetch('http://localhost:3000/api/acompanhar', {
+    const response = await fetch('https://ouvidoria-escolar.onrender.com/api/acompanhar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ protocolo: code, senha: pass })
@@ -195,7 +195,7 @@ document.getElementById('login-form').addEventListener('submit', async (e)=>{
   msg.textContent = '';
 
   try {
-    const response = await fetch('http://localhost:3000/api/login', {
+    const response = await fetch('https://ouvidoria-escolar.onrender.com/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, senha })
@@ -252,7 +252,7 @@ function setFilter(f){
 
 async function loadDashboard(){
   try {
-    const response = await fetch('http://localhost:3000/api/relatos');
+    const response = await fetch('https://ouvidoria-escolar.onrender.com/api/relatos');
     cachedReports = await response.json();
     renderList();
   } catch(e) {
@@ -287,7 +287,7 @@ function renderList(){
 
 async function openModal(protocolo){
   try {
-    const response = await fetch(`http://localhost:3000/api/relatos/${protocolo}`);
+    const response = await fetch(`https://ouvidoria-escolar.onrender.com/api/relatos/${protocolo}`);
     if(!response.ok) return;
     
     const r = await response.json();
@@ -327,7 +327,7 @@ function closeModal(){
 
 async function updateStatus(protocolo, status){
   try {
-    await fetch(`http://localhost:3000/api/relatos/${protocolo}/status`, {
+    await fetch(`https://ouvidoria-escolar.onrender.com/api/relatos/${protocolo}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
@@ -342,7 +342,7 @@ async function addNote(protocolo){
   if(!note) return;
   
   try {
-    await fetch(`http://localhost:3000/api/relatos/${protocolo}/nota`, {
+    await fetch(`https://ouvidoria-escolar.onrender.com/api/relatos/${protocolo}/nota`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ note })
