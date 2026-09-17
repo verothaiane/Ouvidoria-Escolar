@@ -12,7 +12,7 @@ const db = mysql.createConnection({
     port: 21735,
     user: 'avnadmin',
     password: 'AVNS_z9-pdgQQdweK9ptSh5b',
-    database: 'ouvidoria',
+    database: 'defaultdb',
     ssl: {
         rejectUnauthorized: false 
     }
